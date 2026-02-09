@@ -3,61 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pixel to Text | ASCII Art Generator</title>
+    <title>Pixel to Text Pro | ASCII Art Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-panel: #1e293b;
+            --accent: #38bdf8;
+        }
         body {
             font-family: 'Fira Code', monospace;
-            background-color: #0f172a;
+            background-color: var(--bg-dark);
             color: #e2e8f0;
         }
         
         /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1e293b; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #475569; 
-            border-radius: 5px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #64748b; 
-        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-        .ascii-output {
+        .ascii-content {
             font-family: 'Fira Code', monospace;
-            line-height: 0.6; /* Crucial for ASCII aspect ratio */
             white-space: pre;
             overflow-x: auto;
             width: 100%;
+            height: 100%;
         }
 
         /* Upload Zone Animation */
         .drag-active {
-            border-color: #38bdf8 !important;
+            border-color: var(--accent) !important;
             background-color: rgba(56, 189, 248, 0.1) !important;
+            transform: scale(1.02);
         }
 
+        /* Range Slider Styling */
         input[type=range] {
             -webkit-appearance: none; 
             background: transparent; 
         }
-        
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
             height: 16px;
             width: 16px;
             border-radius: 50%;
-            background: #38bdf8;
+            background: var(--accent);
             cursor: pointer;
             margin-top: -6px; 
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
         }
-
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%;
             height: 4px;
@@ -67,270 +63,330 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center p-4 sm:p-8">
+<body class="min-h-screen flex flex-col items-center p-4 sm:p-6 lg:p-8">
 
     <!-- Header -->
-    <header class="w-full max-w-6xl flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-        <div>
-            <h1 class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">
-                IMG &rarr; ASCII
+    <header class="w-full max-w-7xl flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div class="text-center md:text-left">
+            <h1 class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400 tracking-tight">
+                PIXEL &rarr; TEXT PRO
             </h1>
-            <p class="text-slate-400 text-sm mt-1">Turn pixels into poetry.</p>
+            <p class="text-slate-400 text-xs md:text-sm mt-1 tracking-wide">HIGH PERFORMANCE ASCII CONVERTER</p>
         </div>
-        <div class="flex gap-3">
-            <button onclick="loadSample()" class="text-xs text-sky-400 hover:text-sky-300 underline">Load Sample</button>
+        <div class="flex gap-4">
+            <button onclick="resetSettings()" class="text-xs text-slate-500 hover:text-slate-300 transition-colors">Reset Defaults</button>
+            <button onclick="loadSample()" class="bg-slate-800 hover:bg-slate-700 text-sky-400 px-4 py-2 rounded-lg text-xs font-bold transition-all border border-slate-700">
+                Load Sample
+            </button>
         </div>
     </header>
 
-    <main class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <main class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
         
         <!-- Controls Sidebar -->
-        <aside class="lg:col-span-1 flex flex-col gap-6 order-2 lg:order-1">
+        <aside class="lg:col-span-3 flex flex-col gap-6 order-2 lg:order-1 h-fit">
             
             <!-- Upload Box -->
-            <div id="drop-zone" class="border-2 border-dashed border-slate-600 rounded-xl p-6 flex flex-col items-center justify-center text-center transition-colors cursor-pointer hover:border-slate-400 bg-slate-800/50 h-40">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div id="drop-zone" class="border-2 border-dashed border-slate-600 rounded-xl p-6 flex flex-col items-center justify-center text-center transition-all cursor-pointer hover:border-slate-400 hover:bg-slate-800/80 bg-slate-800/40 h-36 group">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-500 group-hover:text-sky-400 transition-colors mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <p class="text-sm text-slate-300 font-medium">Click or Drop Image</p>
-                <p class="text-xs text-slate-500 mt-1">PNG, JPG, WEBP</p>
+                <p class="text-sm text-slate-300 font-medium">Upload Image</p>
+                <p class="text-[10px] text-slate-500 mt-1 uppercase tracking-widest">Drag & Drop Supported</p>
                 <input type="file" id="file-input" class="hidden" accept="image/*">
             </div>
 
-            <!-- Sliders -->
-            <div class="bg-slate-800/50 p-5 rounded-xl border border-slate-700 space-y-5">
+            <!-- Settings Panel -->
+            <div class="bg-slate-800/40 backdrop-blur-sm p-5 rounded-xl border border-slate-700 space-y-6">
                 
                 <!-- Resolution -->
-                <div>
-                    <div class="flex justify-between text-xs text-slate-400 mb-2">
+                <div class="group">
+                    <div class="flex justify-between text-xs text-slate-400 mb-2 font-medium">
                         <label>Resolution (Width)</label>
-                        <span id="width-val">100 chars</span>
+                        <span id="width-val" class="text-sky-400">120</span>
                     </div>
-                    <input type="range" id="width-range" min="20" max="300" value="100" class="w-full">
+                    <input type="range" id="width-range" min="20" max="350" value="120" class="w-full">
+                </div>
+
+                <!-- Aspect Ratio Correction -->
+                <div class="group">
+                    <div class="flex justify-between text-xs text-slate-400 mb-2 font-medium">
+                        <label>Vertical Stretch</label>
+                        <span id="aspect-val" class="text-sky-400">0.55</span>
+                    </div>
+                    <input type="range" id="aspect-range" min="0.3" max="1.0" step="0.01" value="0.55" class="w-full">
+                    <p class="text-[10px] text-slate-600 mt-1">Adjust if image looks squashed.</p>
                 </div>
 
                 <!-- Contrast -->
-                <div>
-                    <div class="flex justify-between text-xs text-slate-400 mb-2">
-                        <label>Contrast</label>
-                        <span id="contrast-val">1.0</span>
+                <div class="group">
+                    <div class="flex justify-between text-xs text-slate-400 mb-2 font-medium">
+                        <label>Contrast Boost</label>
+                        <span id="contrast-val" class="text-sky-400">1.0</span>
                     </div>
-                    <input type="range" id="contrast-range" min="0.5" max="3" step="0.1" value="1" class="w-full">
+                    <input type="range" id="contrast-range" min="0.8" max="2.5" step="0.1" value="1" class="w-full">
                 </div>
 
                 <!-- Character Set -->
                 <div>
-                    <label class="text-xs text-slate-400 mb-2 block">Character Set</label>
-                    <select id="charset-select" class="w-full bg-slate-900 border border-slate-600 text-slate-200 text-xs rounded p-2 focus:outline-none focus:border-sky-500">
-                        <option value="standard">Standard (@%#*+=-:. )</option>
-                        <option value="complex">Complex ($@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'. )</option>
-                        <option value="simple">Simple (#+-. )</option>
-                        <option value="blocks">Blocks (█▓▒░ )</option>
-                        <option value="binary">Binary (01 )</option>
+                    <label class="text-xs text-slate-400 mb-2 block font-medium">Character Set</label>
+                    <select id="charset-select" class="w-full bg-slate-900 border border-slate-600 text-slate-200 text-xs rounded-lg p-2.5 focus:outline-none focus:border-sky-500 transition-colors">
+                        <option value="standard">Standard (Levels: 20)</option>
+                        <option value="complex">High Detail (Levels: 70)</option>
+                        <option value="simple">Minimal (Levels: 5)</option>
+                        <option value="blocks">Block Shade (Levels: 4)</option>
+                        <option value="matrix">Matrix (0/1)</option>
+                        <option value="slashes">Sketch (/\/)</option>
                     </select>
                 </div>
 
-                <!-- Toggles -->
-                <div class="flex items-center justify-between">
-                    <label class="text-xs text-slate-400">Invert Colors</label>
-                    <button id="invert-btn" class="w-10 h-5 rounded-full bg-slate-600 relative transition-colors duration-200">
-                        <div class="w-3 h-3 bg-white rounded-full absolute top-1 left-1 transition-transform duration-200 transform"></div>
-                    </button>
+                <!-- Invert Toggle -->
+                <div class="flex items-center justify-between p-2 bg-slate-900/50 rounded-lg border border-slate-700/50 cursor-pointer" onclick="toggleInvert()">
+                    <label class="text-xs text-slate-400 cursor-pointer pointer-events-none">Invert Colors (Dark Mode)</label>
+                    <div id="invert-indicator" class="w-3 h-3 rounded-full bg-slate-600 transition-colors shadow-inner"></div>
                 </div>
 
             </div>
 
-            <!-- Output Controls -->
-            <div class="grid grid-cols-2 gap-3">
-                <button id="copy-btn" class="col-span-2 flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white py-2 rounded-lg text-sm font-semibold transition-all active:scale-95">
+            <!-- Action Buttons -->
+            <div class="flex flex-col gap-3">
+                <button id="download-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download .txt
+                </button>
+                <button id="copy-btn" class="w-full bg-sky-600 hover:bg-sky-500 text-white py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-sky-900/20">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 012-2h2a2 2 0 012 2m-6 0h6" />
                     </svg>
-                    Copy Text
+                    Copy to Clipboard
                 </button>
-                <button id="zoom-out" class="bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg text-sm transition-colors">
-                    A-
-                </button>
-                <button id="zoom-in" class="bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg text-sm transition-colors">
-                    A+
-                </button>
-            </div>
-            
-            <!-- Notification Toast (Hidden by default) -->
-            <div id="toast" class="hidden fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-emerald-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-bold z-50">
-                Copied to clipboard!
             </div>
 
         </aside>
 
         <!-- Output Area -->
-        <section class="lg:col-span-3 bg-black rounded-xl border border-slate-800 relative min-h-[500px] flex flex-col order-1 lg:order-2 shadow-2xl overflow-hidden">
+        <section class="lg:col-span-9 flex flex-col h-[600px] lg:h-auto min-h-[500px] order-1 lg:order-2">
             
-            <!-- Canvas (Hidden, used for processing) -->
-            <canvas id="canvas" class="hidden"></canvas>
-
-            <!-- Text Output -->
-            <div class="flex-1 p-4 overflow-auto flex items-start justify-center bg-black" id="output-container">
-                <pre id="ascii-art" class="ascii-output text-[8px] text-white"></pre>
+            <!-- Toolbar -->
+            <div class="flex justify-between items-center mb-2 px-1">
+                <div class="flex gap-2">
+                    <button id="zoom-out" class="bg-slate-700 hover:bg-slate-600 text-white p-1.5 rounded text-xs px-3 transition-colors" title="Decrease Font Size">-</button>
+                    <button id="zoom-in" class="bg-slate-700 hover:bg-slate-600 text-white p-1.5 rounded text-xs px-3 transition-colors" title="Increase Font Size">+</button>
+                    <span id="font-size-display" class="text-xs text-slate-500 self-center ml-2">8px</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="toggleView('preview')" id="view-preview-btn" class="text-xs font-bold px-3 py-1 rounded bg-sky-600 text-white">Preview</button>
+                    <button onclick="toggleView('raw')" id="view-raw-btn" class="text-xs font-bold px-3 py-1 rounded bg-slate-700 text-slate-300 hover:text-white">Raw Text</button>
+                </div>
             </div>
 
-            <!-- Loading Overlay -->
-            <div id="loading" class="hidden absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-10">
-                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500"></div>
-                <span class="text-sky-500 mt-4 font-mono text-sm">Processing Matrix...</span>
-            </div>
+            <div class="relative flex-1 bg-black rounded-xl border border-slate-700 shadow-2xl overflow-hidden flex flex-col group">
+                
+                <!-- Hidden Canvas -->
+                <canvas id="canvas" class="hidden"></canvas>
 
-            <!-- Empty State -->
-            <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-slate-600 pointer-events-none">
-                <span class="text-6xl mb-4 opacity-20">☺</span>
-                <p class="text-sm uppercase tracking-widest opacity-40">No Image Loaded</p>
+                <!-- Container for Scrolling -->
+                <div class="absolute inset-0 overflow-auto p-4 custom-scrollbar bg-[#050505]">
+                    <!-- Preview Mode -->
+                    <pre id="ascii-art" class="ascii-content text-[8px] leading-[0.6] text-white origin-top-left transition-transform"></pre>
+                    <!-- Raw Textarea Mode (Hidden by default) -->
+                    <textarea id="raw-output" class="hidden w-full h-full bg-transparent text-white font-mono text-xs border-none outline-none resize-none p-2" spellcheck="false"></textarea>
+                </div>
+
+                <!-- Loading Overlay -->
+                <div id="loading" class="hidden absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-10 backdrop-blur-sm">
+                    <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-sky-500"></div>
+                    <span class="text-sky-500 mt-4 font-mono text-xs">Digitizing...</span>
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-slate-700 pointer-events-none select-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p class="text-xs uppercase tracking-[0.2em] font-bold opacity-40">No Image Loaded</p>
+                </div>
+
+            </div>
+            
+            <!-- Metadata Footer -->
+            <div class="mt-2 flex justify-between text-[10px] text-slate-500 font-mono px-1">
+                <span id="dims-display">0 x 0 chars</span>
+                <span id="char-count-display">0 chars</span>
             </div>
 
         </section>
 
     </main>
 
-    <footer class="w-full max-w-6xl mt-12 text-center text-slate-600 text-xs pb-8">
-        <p>Generated ASCII art can be copied into code comments, text files, or social media.</p>
-    </footer>
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-10 left-1/2 transform -translate-x-1/2 bg-sky-600 text-white px-6 py-3 rounded-full shadow-2xl text-xs font-bold z-50 transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none">
+        Copied to clipboard!
+    </div>
 
     <script>
-        // --- Configuration & State ---
+        // --- Configuration ---
         const CHAR_SETS = {
             standard: "Ñ@#W$9876543210?!abc;:+=-,._ ",
             complex: "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,\"^`'. ",
             simple: "#+-. ",
             blocks: "█▓▒░ ",
-            binary: "10 "
+            matrix: "10 ",
+            slashes: "/\\| "
         };
 
         let state = {
             image: null,
-            width: 100,
+            width: 120,
+            aspectRatio: 0.55,
             contrast: 1.0,
             inverted: false,
             charSet: "standard",
-            fontSize: 8
+            fontSize: 8,
+            mode: 'preview' // 'preview' or 'raw'
         };
 
         // --- DOM Elements ---
         const fileInput = document.getElementById('file-input');
         const dropZone = document.getElementById('drop-zone');
         const asciiOutput = document.getElementById('ascii-art');
+        const rawOutput = document.getElementById('raw-output');
         const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         const loadingEl = document.getElementById('loading');
         const emptyStateEl = document.getElementById('empty-state');
+        const dimsDisplay = document.getElementById('dims-display');
+        const charCountDisplay = document.getElementById('char-count-display');
+        const fontSizeDisplay = document.getElementById('font-size-display');
         
-        // Controls
+        // --- Inputs & Controls ---
         const widthRange = document.getElementById('width-range');
+        const aspectRange = document.getElementById('aspect-range');
         const contrastRange = document.getElementById('contrast-range');
         const charsetSelect = document.getElementById('charset-select');
-        const invertBtn = document.getElementById('invert-btn');
-        const copyBtn = document.getElementById('copy-btn');
-        const zoomInBtn = document.getElementById('zoom-in');
-        const zoomOutBtn = document.getElementById('zoom-out');
+        const invertIndicator = document.getElementById('invert-indicator');
         
-        // Display Values
-        const widthVal = document.getElementById('width-val');
-        const contrastVal = document.getElementById('contrast-val');
+        // --- Initialization ---
+        function init() {
+            setupEventListeners();
+        }
 
-        // --- Event Listeners ---
-
-        // Upload Handling
-        dropZone.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', handleFileSelect);
-
-        // Drag & Drop
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('drag-active');
-        });
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-active'));
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('drag-active');
-            if (e.dataTransfer.files.length) {
-                handleFile(e.dataTransfer.files[0]);
-            }
-        });
-
-        // Sliders & Inputs
-        widthRange.addEventListener('input', (e) => {
-            state.width = parseInt(e.target.value);
-            widthVal.textContent = `${state.width} chars`;
-            requestRender();
-        });
-
-        contrastRange.addEventListener('input', (e) => {
-            state.contrast = parseFloat(e.target.value);
-            contrastVal.textContent = state.contrast.toFixed(1);
-            requestRender();
-        });
-
-        charsetSelect.addEventListener('change', (e) => {
-            state.charSet = e.target.value;
-            requestRender();
-        });
-
-        invertBtn.addEventListener('click', () => {
-            state.inverted = !state.inverted;
-            const knob = invertBtn.querySelector('div');
-            if (state.inverted) {
-                invertBtn.classList.replace('bg-slate-600', 'bg-sky-500');
-                knob.classList.add('translate-x-5');
-            } else {
-                invertBtn.classList.replace('bg-sky-500', 'bg-slate-600');
-                knob.classList.remove('translate-x-5');
-            }
-            requestRender();
-        });
-
-        // Zoom
-        zoomInBtn.addEventListener('click', () => updateFontSize(1));
-        zoomOutBtn.addEventListener('click', () => updateFontSize(-1));
-
-        // Copy
-        copyBtn.addEventListener('click', () => {
-            const text = asciiOutput.innerText;
-            if(!text) return;
+        function setupEventListeners() {
+            // Upload
+            dropZone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', handleFileSelect);
             
-            navigator.clipboard.writeText(text).then(() => {
-                const toast = document.getElementById('toast');
-                toast.classList.remove('hidden');
-                setTimeout(() => toast.classList.add('hidden'), 2000);
-            }).catch(err => {
-                // Fallback for older browsers/iframe restrictions
-                const textArea = document.createElement("textarea");
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                
-                const toast = document.getElementById('toast');
-                toast.classList.remove('hidden');
-                setTimeout(() => toast.classList.add('hidden'), 2000);
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('drag-active');
             });
-        });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-active'));
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-active');
+                if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+            });
+
+            // Sliders
+            widthRange.addEventListener('input', (e) => {
+                state.width = parseInt(e.target.value);
+                document.getElementById('width-val').textContent = state.width;
+                requestRender();
+            });
+
+            aspectRange.addEventListener('input', (e) => {
+                state.aspectRatio = parseFloat(e.target.value);
+                document.getElementById('aspect-val').textContent = state.aspectRatio.toFixed(2);
+                requestRender();
+            });
+
+            contrastRange.addEventListener('input', (e) => {
+                state.contrast = parseFloat(e.target.value);
+                document.getElementById('contrast-val').textContent = state.contrast.toFixed(1);
+                requestRender();
+            });
+
+            // Selects
+            charsetSelect.addEventListener('change', (e) => {
+                state.charSet = e.target.value;
+                requestRender();
+            });
+
+            // Buttons
+            document.getElementById('zoom-in').addEventListener('click', () => updateFontSize(1));
+            document.getElementById('zoom-out').addEventListener('click', () => updateFontSize(-1));
+            document.getElementById('copy-btn').addEventListener('click', copyToClipboard);
+            document.getElementById('download-btn').addEventListener('click', downloadTxt);
+        }
 
         // --- Logic ---
 
-        function handleFileSelect(e) {
-            if (e.target.files.length) {
-                handleFile(e.target.files[0]);
+        function toggleInvert() {
+            state.inverted = !state.inverted;
+            if (state.inverted) {
+                invertIndicator.classList.remove('bg-slate-600');
+                invertIndicator.classList.add('bg-sky-400');
+            } else {
+                invertIndicator.classList.add('bg-slate-600');
+                invertIndicator.classList.remove('bg-sky-400');
             }
+            requestRender();
+        }
+
+        function toggleView(mode) {
+            state.mode = mode;
+            const previewBtn = document.getElementById('view-preview-btn');
+            const rawBtn = document.getElementById('view-raw-btn');
+
+            if (mode === 'preview') {
+                asciiOutput.classList.remove('hidden');
+                rawOutput.classList.add('hidden');
+                previewBtn.className = "text-xs font-bold px-3 py-1 rounded bg-sky-600 text-white";
+                rawBtn.className = "text-xs font-bold px-3 py-1 rounded bg-slate-700 text-slate-300 hover:text-white";
+            } else {
+                asciiOutput.classList.add('hidden');
+                rawOutput.classList.remove('hidden');
+                previewBtn.className = "text-xs font-bold px-3 py-1 rounded bg-slate-700 text-slate-300 hover:text-white";
+                rawBtn.className = "text-xs font-bold px-3 py-1 rounded bg-sky-600 text-white";
+            }
+        }
+
+        function resetSettings() {
+            state.width = 120;
+            state.aspectRatio = 0.55;
+            state.contrast = 1.0;
+            state.inverted = false;
+            state.charSet = "standard";
+            state.fontSize = 8;
+            
+            // UI Updates
+            widthRange.value = 120;
+            document.getElementById('width-val').textContent = "120";
+            aspectRange.value = 0.55;
+            document.getElementById('aspect-val').textContent = "0.55";
+            contrastRange.value = 1.0;
+            document.getElementById('contrast-val').textContent = "1.0";
+            charsetSelect.value = "standard";
+            invertIndicator.classList.add('bg-slate-600');
+            invertIndicator.classList.remove('bg-sky-400');
+            
+            updateFontSize(0);
+            requestRender();
+        }
+
+        function handleFileSelect(e) {
+            if (e.target.files.length) handleFile(e.target.files[0]);
         }
 
         function handleFile(file) {
             if (!file.type.match('image.*')) {
-                alert("Please select an image file.");
+                showToast("Please upload an image file.", true);
                 return;
             }
-
             const reader = new FileReader();
             loadingEl.classList.remove('hidden');
-            
             reader.onload = (e) => {
                 const img = new Image();
                 img.onload = () => {
@@ -344,101 +400,177 @@
             reader.readAsDataURL(file);
         }
 
-        // Sample image for quick testing
         window.loadSample = function() {
-             const img = new Image();
-             img.crossOrigin = "Anonymous";
-             loadingEl.classList.remove('hidden');
-             img.onload = () => {
-                 state.image = img;
-                 emptyStateEl.classList.add('hidden');
-                 requestRender();
-                 loadingEl.classList.add('hidden');
-             };
-             // Using a placeholder image
-             img.src = "https://images.unsplash.com/photo-1546182990-dced7187a68d?w=600&q=80";
+            loadingEl.classList.remove('hidden');
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.onload = () => {
+                state.image = img;
+                emptyStateEl.classList.add('hidden');
+                requestRender();
+                loadingEl.classList.add('hidden');
+            };
+            // A nice high contrast sample
+            img.src = "https://images.unsplash.com/photo-1544866092-1935c5ef2a8f?w=600&q=80";
         }
 
         let renderTimeout;
         function requestRender() {
             if (!state.image) return;
-            // Debounce slightly for performance on slider drag
             clearTimeout(renderTimeout);
-            renderTimeout = setTimeout(renderAscii, 10);
+            renderTimeout = setTimeout(renderAscii, 15);
         }
 
         function renderAscii() {
             const img = state.image;
-            
-            // Calculate Aspect Ratio
-            // Fonts are usually about twice as tall as they are wide.
-            // To keep the image from looking stretched, we must squash the height.
-            const aspectRatio = img.height / img.width;
-            const fontAspectRatio = 0.55; // Adjust based on font metrics
-            
             const finalWidth = state.width;
-            const finalHeight = Math.floor(finalWidth * aspectRatio * fontAspectRatio);
+            // Height formula: width * (imgHeight/imgWidth) * fontAspectRatio
+            const finalHeight = Math.floor(finalWidth * (img.height / img.width) * state.aspectRatio);
 
-            // Resize image via Canvas
             canvas.width = finalWidth;
             canvas.height = finalHeight;
+            
+            // High quality downscaling not needed for ASCII, but smoothing helps
+            ctx.imageSmoothingEnabled = true;
             ctx.drawImage(img, 0, 0, finalWidth, finalHeight);
 
-            // Get Pixel Data
             const imageData = ctx.getImageData(0, 0, finalWidth, finalHeight);
             const data = imageData.data;
-
             let asciiStr = "";
-            const chars = CHAR_SETS[state.charSet];
             
-            // Prepare Look Up Table for contrast
-            const contrastFactor = (259 * (state.contrast * 255 + 255)) / (255 * (259 - state.contrast * 255));
+            const chars = CHAR_SETS[state.charSet];
+            const charsLen = chars.length;
 
             for (let y = 0; y < finalHeight; y++) {
                 for (let x = 0; x < finalWidth; x++) {
                     const offset = (y * finalWidth + x) * 4;
-                    let r = data[offset];
-                    let g = data[offset + 1];
-                    let b = data[offset + 2];
-                    // Alpha = data[offset + 3] - ignored for now, assumed opaque
+                    const r = data[offset];
+                    const g = data[offset + 1];
+                    const b = data[offset + 2];
 
-                    // Apply Contrast
-                    r = truncate(contrastFactor * (r - 128) + 128);
-                    g = truncate(contrastFactor * (g - 128) + 128);
-                    b = truncate(contrastFactor * (b - 128) + 128);
+                    // Luminance
+                    let brightness = (0.299 * r + 0.587 * g + 0.114 * b);
 
-                    // Calculate Brightness (Luminance)
-                    const brightness = (0.299 * r + 0.587 * g + 0.114 * b);
+                    // Simple Linear Contrast
+                    // Factor > 1 increases difference from mid-gray (128)
+                    brightness = ((brightness - 128) * state.contrast) + 128;
+                    brightness = Math.max(0, Math.min(255, brightness));
+
+                    // Map to char
+                    let charIndex = Math.floor((brightness / 255) * charsLen);
                     
-                    // Map brightness to character index
-                    let charIndex = Math.floor((brightness / 255) * (chars.length - 1));
-                    
-                    // Handle Inversion (Swap dark/light mapping)
+                    // Invert mapping logic
                     if (!state.inverted) {
-                        charIndex = (chars.length - 1) - charIndex;
+                         // Standard: Dark pixels = Dense chars
+                         charIndex = (charsLen - 1) - charIndex;
                     }
 
-                    // Safety clamp
-                    charIndex = Math.max(0, Math.min(charIndex, chars.length - 1));
-                    
+                    charIndex = Math.max(0, Math.min(charIndex, charsLen - 1));
                     asciiStr += chars[charIndex];
                 }
                 asciiStr += "\n";
             }
 
-            asciiOutput.innerText = asciiStr;
-        }
-
-        function truncate(value) {
-            return Math.max(0, Math.min(255, value));
+            // Update Outputs
+            asciiOutput.textContent = asciiStr;
+            rawOutput.value = asciiStr;
+            
+            // Update Stats
+            dimsDisplay.textContent = `${finalWidth} x ${finalHeight} chars`;
+            charCountDisplay.textContent = `${(finalWidth * finalHeight).toLocaleString()} chars`;
         }
 
         function updateFontSize(change) {
             state.fontSize += change;
             if (state.fontSize < 4) state.fontSize = 4;
-            if (state.fontSize > 24) state.fontSize = 24;
+            if (state.fontSize > 32) state.fontSize = 32;
+            
             asciiOutput.style.fontSize = `${state.fontSize}px`;
+            rawOutput.style.fontSize = `${state.fontSize}px`;
+            fontSizeDisplay.textContent = `${state.fontSize}px`;
         }
+
+        function copyToClipboard() {
+            const text = asciiOutput.textContent;
+            if(!text) return;
+
+            // Attempt using the modern Clipboard API
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text)
+                    .then(() => showToast("Copied to clipboard!"))
+                    .catch(err => {
+                        console.warn("Clipboard API blocked, switching to fallback:", err);
+                        fallbackCopyTextToClipboard(text);
+                    });
+            } else {
+                // Fallback for environments where Navigator Clipboard is unavailable
+                fallbackCopyTextToClipboard(text);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            
+            // Ensure the textarea is part of the DOM but invisible to the user
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            textArea.style.top = "0";
+            
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                // Execute the legacy copy command
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast("Copied to clipboard!");
+                } else {
+                    showToast("Copy failed. Please copy manually.", true);
+                }
+            } catch (err) {
+                console.error('Fallback copy failed', err);
+                showToast("Copy failed. Please copy manually.", true);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        function downloadTxt() {
+            const text = asciiOutput.textContent;
+            if(!text) {
+                showToast("No content to download.", true);
+                return;
+            }
+            
+            const blob = new Blob([text], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "pixel-art.txt";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("Downloaded pixel-art.txt");
+        }
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.backgroundColor = isError ? '#ef4444' : '#0284c7';
+            toast.style.opacity = '1';
+            toast.style.transform = 'translate(-50%, 0)';
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translate(-50%, -20px)';
+            }, 2500);
+        }
+
+        // Run
+        init();
 
     </script>
 </body>
